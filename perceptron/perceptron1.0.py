@@ -1,7 +1,7 @@
 # coding=utf-8
 # @Time: 2022/1/13 18:28
 # @Author: 张 翔
-# @File: perceptron.py
+# @File: perceptron1.0.py
 # @Software: PyCharm
 import pandas as pd
 import numpy as np
