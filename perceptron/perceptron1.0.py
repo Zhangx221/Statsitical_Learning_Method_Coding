@@ -28,12 +28,12 @@ Architecture: 64bit
 
 #####################测试用例######################
 取 a = 0.001 iters = 50得到：
-模型用时：11.894742488861084
-模型准确率：81.58%
+模型用时：9.858847379684448
+模型准确率：81.21000%
 
 a=0.1, iters=100000:
-模型用时：83.96011281013489
-模型准确率：79.20000%
+模型用时：77.04006814956665
+模型准确率：78.31000%
 """
 
 def data_load(train_filepath, test_filepath):
@@ -98,7 +98,7 @@ def score(w, b, Xtest, ytest):
 if __name__ == '__main__':
     time0 = time()
     Xtrain, Xtest, ytrain, ytest = data_load("../data/mnist_train.csv", "../data/mnist_test.csv")
-    w, b = perceptron(Xtrain, ytrain, a=0.0001, iters=100000)
+    w, b = perceptron(Xtrain, ytrain, a=0.1, iters=100000)
     score = score(w, b, Xtest, ytest)
     time1 = time()
     print(f"模型用时：{time1-time0}\n"
