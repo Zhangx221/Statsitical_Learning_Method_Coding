@@ -98,7 +98,7 @@ def score(w, b, Xtest, ytest):
 if __name__ == '__main__':
     time0 = time()
     Xtrain, Xtest, ytrain, ytest = data_load("../data/mnist_train.csv", "../data/mnist_test.csv")
-    w, b = perceptron(Xtrain, ytrain, a=0.1, iters=100000)
+    w, b = perceptron(Xtrain, ytrain, a=0.1, iters=1000000)
     score = score(w, b, Xtest, ytest)
     time1 = time()
     print(f"模型用时：{time1-time0}\n"
