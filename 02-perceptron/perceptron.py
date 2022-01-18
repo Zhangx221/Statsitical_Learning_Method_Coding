@@ -1,11 +1,10 @@
 # coding=utf-8
 # @Time: 2022/1/13 18:28
 # @Author: 张 翔
-# @File: perceptron1.0.py
+# @File: perceptron.py
 # @Software: PyCharm
-import pandas as pd
-import numpy as np
-from time import time
+# @email: 1456978852@qq.com
+
 """
 #####################主机信息######################
 Python implementation: CPython
@@ -14,9 +13,6 @@ IPython version      : 7.22.0
 
 numpy     : 1.18.5
 pandas    : 1.2.2
-matplotlib: 3.3.3
-scipy     : 1.6.2
-sklearn   : 0.24.1
 
 Compiler    : MSC v.1916 64 bit (AMD64)
 OS          : Windows
@@ -27,6 +23,9 @@ CPU cores   : 8
 Architecture: 64bit
 
 #####################测试用例######################
+测试集：50000个样本 784个特征
+训练集：10000个样本 784个特征
+
 取 a = 0.001 iters = 50得到：
 模型用时：9.858847379684448
 模型准确率：81.21000%
@@ -35,6 +34,10 @@ a=0.1, iters=100000:
 模型用时：77.04006814956665
 模型准确率：78.31000%
 """
+
+import pandas as pd
+import numpy as np
+from time import time
 
 def data_load(train_filepath, test_filepath):
     """
@@ -50,6 +53,7 @@ def data_load(train_filepath, test_filepath):
     ytest = np.where(ytest >= 5, 1, -1)
     Xtrain = Xtrain / 255           # 特征归一化用（Xtrain-最小值）/（最大值-最小值）
     Xtest = Xtest / 255             # 用Xtrain.max().max()得知最大值为255，同理最小值为0
+    # 试验过，归一化正确率上升一点
     return Xtrain, Xtest, ytrain, ytest
 
 
