@@ -23,18 +23,18 @@ CPU cores   : 8
 Architecture: 64bit
 
 #####################测试用例######################
-测试集：50000个样本 784个特征
-训练集：10000个样本 784个特征
+测试集：50000个样本 784个特征   256种取值
+训练集：10000个样本 784个特征  2种标签，感知机做了二值化处理（原本10种标签）
+
+因为感知机只能一对多会出现一些难以辨别的区域
+具体可参考邱锡鹏的《神经网络与深度学习》3.1.2 ：https://github.com/nndl/nndl.github.io
+所以可以对标签做二值化分箱
 
 初始化 w = [0]*n, b = 0
 
-a = 0.001 iters = 50得到：
-模型用时：9.858847379684448
-模型准确率：81.21000%
-
 a=0.1, iters=100000:
-模型用时：77.04006814956665
-模型准确率：78.31000%
+模型用时：103.92513608932495
+模型准确率：83.25000%
 """
 
 import pandas as pd
@@ -53,8 +53,8 @@ def data_load(train_filepath, test_filepath):
     Xtest, ytest = test_data.iloc[:, 1:], test_data.iloc[:, 0]
     ytrain = np.where(ytrain >= 5, 1, -1)
     ytest = np.where(ytest >= 5, 1, -1)
-    Xtrain = Xtrain / 255           # 特征归一化用（Xtrain-最小值）/（最大值-最小值）
-    Xtest = Xtest / 255             # 用Xtrain.max().max()得知最大值为255，同理最小值为0
+    # Xtrain = Xtrain / 255           # 特征归一化用（Xtrain-最小值）/（最大值-最小值）
+    # Xtest = Xtest / 255             # 用Xtrain.max().max()得知最大值为255，同理最小值为0
     # 试验过，归一化正确率上升一点
     return Xtrain, Xtest, ytrain, ytest
 
@@ -82,7 +82,7 @@ def perceptron(Xtrain, ytrain, a=0.001, iters=50):
     return w, b
 
 
-def score(w, b, Xtest, ytest):
+def score(w,  Xtest, ytest):
     """
     :param w: 模型参数
     :param b: 模型参数
@@ -90,21 +90,16 @@ def score(w, b, Xtest, ytest):
     :param ytest: 测试集标签
     :return: 返回测试的正确率（正确样本数/总样本数）
     """
-    w = w.values
-    tot_num = Xtest.shape[0]
-    error_num = 0
-    for j in range(tot_num):
-        x = Xtest.iloc[j, :]
-        y = ytest[j]
-        if y * (w.dot(x) + b) <= 0:
-            error_num += 1
-    return 1 - error_num / tot_num
+
+
+    out = np.where(np.dot(Xtest,w) < 0, -1, 1)
+    return (ytest == out).sum() / ytest.shape[0]
 
 
 if __name__ == '__main__':
     time0 = time()
     Xtrain, Xtest, ytrain, ytest = data_load("../data/mnist_train.csv", "../data/mnist_test.csv")
-    w, b = perceptron(Xtrain, ytrain, a=0.1, iters=1000000)
+    w, b = perceptron(Xtrain, ytrain, a=0.1, iters=100000)
     score = score(w, b, Xtest, ytest)
     time1 = time()
     print(f"模型用时：{time1-time0}\n"

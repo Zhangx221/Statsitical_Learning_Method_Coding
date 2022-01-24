@@ -3,6 +3,10 @@
 # @Author: 张 翔
 # @File: test.py
 # @Software: PyCharm
+"""
+一个小的demo图形化表示感知机决策平面是怎么优化的
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 

@@ -1,7 +1,7 @@
 # coding=UTF-8
-# @Time: 2022/1/17 10:52
+# @Time: 2022/1/17 18:22
 # @Author: 张 翔
-# @File: naive_bayes_2values.py
+# @File: naive_bayes.py
 # @Software: PyCharm
 # @email: 1456978852@qq.com
 
@@ -23,12 +23,11 @@ CPU cores   : 8
 Architecture: 64bit
 
 #####################测试用例######################
-测试集：50000个样本 784个特征
-训练集：10000个样本 784个特征
+测试集：50000个样本 784个特征  256种取值
+训练集：10000个样本 784个特征  10种标签
 
-2分箱,处理阈值为128，准确率与不分箱差不多，但是模型用时大幅度缩减
-模型用时：33.311256408691406
-模型准确率：84.37000%
+模型用时：77.49678087234497
+模型准确率：83.45000%
 """
 
 import numpy as np
@@ -46,10 +45,7 @@ def data_load(train_filepath, test_filepath):
 	train_data, test_data = pd.read_csv(train_filepath, header=None), pd.read_csv(test_filepath, header=None)
 	Xtrain, ytrain, Xtest, ytest = train_data.iloc[:, 1:], train_data.iloc[:, 0], test_data.iloc[:, 1:], test_data.iloc[
 																										 :, 0]
-	Xtrain = np.where(Xtrain >= 128, 1, 0)  # 分成黑白像素，因为不像KNN一养，朴素贝叶斯假设各个特征独立，
-	# eg 尽量避免颜色为100的附近值可能为100左右这种潜在关系,进行分箱处理，虽然结果证明也差不多~ ~
-
-	Xtest = np.where(Xtest >= 128, 1, 0)
+	Xtrain, Xtest = np.array(Xtrain), np.array(Xtest)
 	return Xtrain, Xtest, ytrain, ytest
 
 
@@ -60,21 +56,32 @@ def naive_bayes(Xtrain, ytrain):
 	:return: p(y): shape(10,)为label的10个取值
 	以及p(x|y): shape(10,784,2) 为label的10个取值，对应的784个特征的01取值
 	"""
+
 	py = []  # p(y)
-	pyx = np.zeros((10, 784, 2))  # p(x|y)
-	for i in range(10):
-		py.append((np.sum(ytrain == i)) / len(ytrain))
+	pyx = np.zeros((10, 784, 256))  # p(x|y)
 
-	for i in range(len(ytrain)):
-		label = ytrain[i]
-		x = Xtrain[i]
+	for i in range(10):
+		py.append(np.log((np.sum(ytrain == i)) / len(ytrain)))  # 为什么对p(y)取log呢，一开始我没取，算出来概率一直为0，
+													# 因为很多项在0~1之间的数相乘很容易趋近于0，达到python识别不到的的很小的数
+													# 所以后面的概率都取了对数的形式，连成变成了连加，更好处理了
+
+	for i in range(Xtrain.shape[0]):  # 在样本总数做循环
+		y = ytrain[i]  # 当前样本标签
+		x = Xtrain[i]  # 当前样本特征
 		for j in range(784):
-			pyx[label][j][x[j]] += 1  # 对10个矩阵的每个特征为01（为二维的onehot向量）进行技术
+			pyx[y][j][x[j]] += 1
+		# 记录p(x|y)在标签y下，相当于10个矩阵，每个矩阵784行（特征），256列（特征取值范围0~255）,元素对应每个x的取值的个数
 
+	pyxn = np.zeros(256)
 	for i in range(10):
-		for j in range(784):   # 这里下面两排是与不分箱的唯一差别 也可以将不分箱的k in range(2)
-			pyx0, pyx1 = pyx[i][j][0], pyx[i][j][1]  # pyx0为 p(0|x,y)  # pyx1为 p(1|x,y)
-			pyx[i][j][0], pyx[i][j][1] = np.log((pyx0 + 1) / (pyx0 + pyx1 + 2)), np.log((pyx1 + 1) / (pyx0 + pyx1 + 2))
+		for j in range(784):  # 下面是对选定某个标签（y）下，某个特征（X的某一维度）下，256个值所在当前标签下总数的比例
+			sums = 0  # 记录某个标签下，某个特征，的总记录个数
+			for k in range(256):
+				pyxn[k] = pyx[i][j][k]
+				sums += pyx[i][j][k]
+			for k in range(256):
+				pyx[i][j][k] = np.log((pyxn[k] + 1) / (sums + 256))  # 拉普拉斯平滑，取lambda=1
+			# print(sums)
 	return py, pyx
 
 
@@ -88,10 +95,10 @@ def score(py, pyx, Xtest, ytest):
 	"""
 	outy = []
 	for x in Xtest:
-		prob = np.log(py)
+		prob = py  # 初始化概率=p(y)，因为这个每个统计学习方法公式4.7第一项就是y的概率
 		for i, j in enumerate(x):
-			prob += pyx[:, i, j]
-		outy.append(np.argsort(prob)[-1])
+			prob += pyx[:, i, j]  # 对10个标签的，选定特征i，以及特征取值j的概率做连乘（因为是取了log所以变成了连加）
+		outy.append(np.argsort(prob)[-1])  # 取出10个标签中，对应y最大的索引（索引顺序刚好与标签顺序一直，所以索引值=标签值）
 	return (outy == ytest).sum() / ytest.shape[0]
 
 
