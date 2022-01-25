@@ -26,8 +26,8 @@ Architecture: 64bit
 测试集：50000个样本 784个特征   256种取值
 训练集：10000个样本 784个特征  做了二值化处理（原本10种标签）二叉树好分些
 
-模型用时：90.57
-模型准确率：88.97%
+模型用时：299.75
+模型准确率：84.43%
 """
 
 import numpy as np
@@ -137,7 +137,7 @@ class DecisionTree():
 				outy.append(inputy[i])
 		return np.array(outX), np.array(outy)
 
-	def fit(self, *arg):
+	def decision_tree(self, *arg):
 		"""
 		:param arg:
 		:param epsilon:
@@ -158,9 +158,14 @@ class DecisionTree():
 			return self.leaf_node_class(leaf_ytrain)
 
 		out_tree = {Ag: {}}
-		out_tree[Ag][0] = self.fit(self.new_data(leaf_Xtrain, leaf_ytrain, Ag, 0))
-		out_tree[Ag][1] = self.fit(self.new_data(leaf_Xtrain, leaf_ytrain, Ag, 1))
+		out_tree[Ag][0] = self.decision_tree(self.new_data(leaf_Xtrain, leaf_ytrain, Ag, 0))
+		out_tree[Ag][1] = self.decision_tree(self.new_data(leaf_Xtrain, leaf_ytrain, Ag, 1))
 		return out_tree
+
+	def fit(self, Xtrain, ytrain):
+
+		self.tree = self.decision_tree((Xtrain, ytrain))
+
 
 	def predict(self, Xtest_i, tree):
 		"""
@@ -199,10 +204,10 @@ class DecisionTree():
 		out: out为Xtest的预测结果
 		:return:
 		"""
-		tree = self.fit((Xtest, ytest))
+		# tree =   # 预测测试集的
 		out = np.zeros(Xtest.shape[0])
 		for i in range(Xtest.shape[0]):
-			out[i] = self.predict(Xtest[i], tree)
+			out[i] = self.predict(Xtest[i], self.tree)
 
 		return (ytest == out).sum() / ytest.shape[0]
 
@@ -214,6 +219,7 @@ def main():
 	DT = DecisionTree()
 	# 初始化模型 设置模型参数
 	DT.fit(Xtrain, ytrain)
+	# DT.tree( Xtrain, ytrain)
 	# 训练模型
 	dt_score = DT.score(Xtest, ytest)
 	# 用测试集打分
