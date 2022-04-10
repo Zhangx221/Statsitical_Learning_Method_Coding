@@ -51,12 +51,9 @@ def data_load(train_filepath, test_filepath):
 
 class Naive_bayes():
 	"""
-	:param Xtrain:
-	:param ytrain:
 	:return: p(y): shape(10,)为label的10个取值
 	以及p(x|y): shape(10,784,2) 为label的10个取值，对应的784个特征的01取值
 	"""
-
 	def __init__(self):
 		self.py = []  # p(y)
 		self.pyx = np.zeros((10, 784, 256))  # p(x|y)
