@@ -26,7 +26,7 @@ Architecture: 64bit
 测试集：50000个样本 784个特征  256种取值
 训练集：10000个样本 784个特征  10种标签
 
-模型用时：79.64
+模型用时：56.25
 模型准确率：83.45%
 """
 
@@ -64,7 +64,7 @@ class Naive_bayes():
 	def fit(self, Xtrain, ytrain):
 
 		for i in range(10):
-			self.py.append(np.log((np.sum(ytrain == i)) / len(ytrain)))  # 为什么对p(y)取log呢，一开始我没取，算出来概率一直为0，
+			self.py.append(np.log((np.sum(ytrain == i) + 1) / (len(ytrain)+10)))  # 为什么对p(y)取log呢，一开始我没取，算出来概率一直为0，
 		# 因为很多项在0~1之间的数相乘很容易趋近于0，达到python识别不到的的很小的数
 		# 所以后面的概率都取了对数的形式，连成变成了连加，更好处理了
 
